@@ -1,9 +1,10 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import numpy as np
 
 # Görüşme Notu'ndan ülke çıkaran fonksiyon
 def extract_country(note):
-    if note is None:  # Eğer görüşme notu None ise
+    if pd.isna(note):  # Eğer görüşme notu NaN veya None ise
         return "Diğer"  # "Diğer" olarak döndürelim
     
     countries = [
@@ -18,28 +19,44 @@ def extract_country(note):
             return country
     return "Diğer"  # Ülke bulunmazsa "Diğer" olarak dönecek
 
-# Excel dosyasını yükle
-uploaded_file = st.file_uploader("Excel dosyanızı yükleyin", type=["xlsx"])
-if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    
-    # Görüşme Notu'ndan ülke sütununu çıkar
-    df['Ülke'] = df['Görüşme Notu'].apply(extract_country)
-    
-    # Ülke listesi
-    countries = df['Ülke'].dropna().unique()
-    
-    # Streamlit için filtreleme seçenekleri
-    selected_country = st.selectbox("Ülke seçin", options=countries)
-    filtered_df = df[df['Ülke'] == selected_country]
-    
-    # Ülkeye göre filtrelenmiş veriyi göster
-    st.write(f"Seçilen Ülke: {selected_country}")
-    st.dataframe(filtered_df)
+# Görüşme notundan ihracat ve ithalat durumlarını çıkaran fonksiyon
+def extract_trade_type(note):
+    if pd.isna(note):
+        return "Diğer"
+    note = note.lower()
+    if "ihracat" in note:
+        return "İhracat"
+    elif "ithalat" in note:
+        return "İthalat"
+    return "Diğer"  # Eğer ihracat ya da ithalat yoksa "Diğer" olarak dönecek
 
-    # İhracat/İthalat filtreleme
-    export_or_import = st.radio("İhracat mı İthalat mı?", ["İhracat", "İthalat"])
-    filtered_export_import_df = filtered_df[filtered_df['Görüşme Notu'].str.contains(export_or_import, na=False)]
-    
-    st.write(f"Filtrelenmiş {export_or_import} Verileri:")
-    st.dataframe(filtered_export_import_df)
+# Veri dosyasını yükleme
+uploaded_file = st.file_uploader("Excel dosyanızı yükleyin", type="xlsx")
+
+if uploaded_file is not None:
+    # Veriyi yükleyelim
+    df = pd.read_excel(uploaded_file)
+
+    # Verideki 'Görüşme Notu' sütununu kontrol edelim
+    if 'Görüşme Notu' in df.columns:
+        # Ülke ve İhracat/İthalat bilgilerini çıkaralım
+        df['Ülke'] = df['Görüşme Notu'].apply(extract_country)
+        df['Ticaret Türü'] = df['Görüşme Notu'].apply(extract_trade_type)
+
+        # Ülkeleri ve ticaret türlerini seçmek için filtreler ekleyelim
+        countries = df['Ülke'].dropna().unique()
+        trade_types = df['Ticaret Türü'].dropna().unique()
+
+        # Ülke filtreleme
+        selected_country = st.selectbox('Bir ülke seçin', countries)
+        df_filtered_by_country = df[df['Ülke'] == selected_country]
+
+        # Ticaret türü filtreleme
+        selected_trade_type = st.selectbox('Bir ticaret türü seçin', trade_types)
+        df_filtered_by_trade = df_filtered_by_country[df_filtered_by_country['Ticaret Türü'] == selected_trade_type]
+
+        # Filtrelenmiş veriyi gösterelim
+        st.write(f"{selected_country} için {selected_trade_type} ticareti verileri", df_filtered_by_trade)
+
+    else:
+        st.error("'Görüşme Notu' sütunu bulunamadı.")
