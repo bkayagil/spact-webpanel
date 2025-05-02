@@ -1,31 +1,44 @@
 import streamlit as st
 import pandas as pd
-import pycountry
 
-def extract_country(text):
-    countries = [country.name for country in pycountry.countries]
-    for country in countries:
-        if country.lower() in text.lower():
-            return country
-    return ""
+# Genişletilmiş ülke listesi
+country_list = [
+    "Amerika", "Almanya", "Fransa", "İngiltere", "Kanada", "İtalya", 
+    "İspanya", "Hindistan", "Japonya", "Çin", "Brezilya", "Rusya", 
+    "Türkiye", "Arjantin", "Avusturya", "Belçika", "Danimarka", "Fas", 
+    "Hollanda", "İsveç", "İsviçre", "Meksika", "Polonya", "Portekiz", 
+    "Romanya", "Suriye", "Çek Cumhuriyeti", "Yunanistan", "Ukrayna", 
+    "Güney Kore", "Endonezya", "Malezya", "Singapur", "Filipinler", 
+    "Mısır", "Venezuela", "Pakistan", "Birleşik Arap Emirlikleri", 
+    "Suudi Arabistan", "Katar", "Irak", "Libya", "Bangladeş", "Küba", 
+    "Nijerya", "Kenya", "Tanzanya", "Jamaika", "Yeni Zelanda", "Avustralya", 
+    "Güney Afrika", "Kolombiya", "Peru", "Kosta Rika", "El Salvador"
+]
 
-st.set_page_config(page_title="Country Extractor", layout="wide")
-st.title("Excel'den Ülke Çıkarıcı Web Paneli")
+# Ülke çekme fonksiyonu
+def extract_country_from_notes(note):
+    countries_found = []
+    for country in country_list:
+        if country.lower() in note.lower():  # Küçük harflerle kontrol ediyoruz
+            countries_found.append(country)
+    return ", ".join(countries_found)  # Bulunan ülkeleri virgülle ayırarak döndürüyoruz
 
-uploaded_file = st.file_uploader("Excel dosyasını yükle", type=["xlsx"])
+# Streamlit arayüzü
+st.title('Ülke Çekme Uygulaması')
 
-if uploaded_file:
+# Dosya yükleme
+uploaded_file = st.file_uploader("Excel dosyasını yükleyin", type="xlsx")
+
+if uploaded_file is not None:
+    # Dosyayı okuma
     df = pd.read_excel(uploaded_file)
-    if "Görüşme Notu" in df.columns:
-        df["Ülke"] = df["Görüşme Notu"].astype(str).apply(extract_country)
-        st.dataframe(df)
 
-        country_filter = st.selectbox("Bir ülke seçerek filtrele", ["Hepsi"] + sorted(df["Ülke"].dropna().unique().tolist()))
-        if country_filter != "Hepsi":
-            df = df[df["Ülke"] == country_filter]
-            st.dataframe(df)
-
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("CSV olarak indir", csv, "export.csv", "text/csv")
+    # 'Görüşme Notu' sütununu kontrol et
+    if 'Görüşme Notu' in df.columns:
+        # Ülke isimlerini çıkarmak için 'Görüşme Notu' sütununu kullanıyoruz
+        df['Ülke'] = df['Görüşme Notu'].apply(extract_country_from_notes)
+        
+        # Sonuçları göster
+        st.write(df)
     else:
-        st.error("Excel dosyasında 'Görüşme Notu' sütunu bulunamadı.")
+        st.error("'Görüşme Notu' sütunu bulunamadı.")
