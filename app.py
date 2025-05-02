@@ -17,6 +17,8 @@ country_list = [
 
 # Ülke çekme fonksiyonu
 def extract_country_from_notes(note):
+    if not note:  # Eğer 'note' boşsa, hiçbir şey yapma
+        return ""
     countries_found = []
     for country in country_list:
         if country.lower() in note.lower():  # Küçük harflerle kontrol ediyoruz
