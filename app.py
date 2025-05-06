@@ -25,15 +25,17 @@ def extract_trade_type(note):
         return "Diğer"
     
     note = note.lower()
-    
+    result = []
+
     if "ihracat" in note:
-        return "İhracat"
-    elif "ithalat" in note:
-        return "İthalat"
-    elif "intermodal" in note:
-        return "Intermodal"
-    
-    return "Diğer"  # Eğer hiçbiri yoksa "Diğer"
+        result.append("İhracat")
+    if "ithalat" in note:
+        result.append("İthalat")
+    if "intermodal" in note:
+        result.append("Intermodal")
+
+    return ", ".join(result) if result else "Diğer"
+
 
 # Veri dosyasını yükleme
 uploaded_file = st.file_uploader("Excel dosyanızı yükleyin", type="xlsx")
