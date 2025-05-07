@@ -19,7 +19,7 @@ def extract_country(note):
             return country
     return "Diğer"  # Ülke bulunmazsa "Diğer" olarak dönecek
 
-# Görüşme notundan ihracat, ithalat ve intermodal durumlarını çıkaran fonksiyon
+# Görüşme notundan ihracat, ithalat, intermodal ve havayolu durumlarını çıkaran fonksiyon
 def extract_trade_type(note):
     if pd.isna(note):
         return "Diğer"
@@ -33,8 +33,11 @@ def extract_trade_type(note):
         result.append("İthalat")
     if "intermodal" in note:
         result.append("Intermodal")
+    if "havayolu" in note:
+        result.append("Havayolu")
 
     return ", ".join(result) if result else "Diğer"
+
 
 
 # Veri dosyasını yükleme
