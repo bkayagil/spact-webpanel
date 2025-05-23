@@ -20,21 +20,22 @@ def extract_country(note):
     return "Diğer"  # Ülke bulunmazsa "Diğer" olarak dönecek
 
 # Görüşme notundan ihracat, ithalat, intermodal ve havayolu durumlarını çıkaran fonksiyon
-result = []
+def analiz_et(note):
+    result = []
 
-if all(keyword in note for keyword in ["ihracat", "ithalat", "intermodal", "havayolu"]):
-    return "Tümü"
+    if all(keyword in note for keyword in ["ihracat", "ithalat", "intermodal", "havayolu"]):
+        return "Tümü"
 
-if "ihracat" in note:
-    result.append("İhracat")
-if "ithalat" in note:
-    result.append("İthalat")
-if "intermodal" in note:
-    result.append("Intermodal")
-if "havayolu" in note:
-    result.append("Havayolu")
+    if "ihracat" in note:
+        result.append("İhracat")
+    if "ithalat" in note:
+        result.append("İthalat")
+    if "intermodal" in note:
+        result.append("Intermodal")
+    if "havayolu" in note:
+        result.append("Havayolu")
 
-return ", ".join(result) if result else "Diğer"
+    return ", ".join(result) if result else "Diğer"
 
 
 
