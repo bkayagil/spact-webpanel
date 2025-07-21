@@ -77,8 +77,8 @@ if uploaded_file is not None:
         st.write(f"Filtrelenmiş veri ({len(df_filtered)} kayıt):")
         st.dataframe(df_filtered)
 
-        # İndirilebilir CSV çıktısı
-        csv = df_filtered.to_csv(index=False).encode('utf-8')
+        # UTF-8 BOM ile CSV çıktısı (Excel karakter bozulmasını önler)
+        csv = df_filtered.to_csv(index=False).encode('utf-8-sig')
         st.download_button("CSV olarak indir", csv, "filtrelenmis_veri.csv", "text/csv")
 
     else:
