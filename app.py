@@ -20,7 +20,7 @@ def extract_country(note):
             return country
     return "Diğer"
 
-# Ticaret türü çıkarma fonksiyonu
+# Ticaret türü çıkarma fonksiyonu (parsiyel ve ltl eklendi)
 def extract_trade_type(note):
     if pd.isna(note):
         return "Diğer"
@@ -39,6 +39,8 @@ def extract_trade_type(note):
         result.append("Intermodal")
     if "havayolu" in note_lower:
         result.append("Havayolu")
+    if "parsiyel" in note_lower or "ltl" in note_lower:
+        result.append("Parsiyel")
 
     return ", ".join(result) if result else "Diğer"
 
@@ -60,15 +62,15 @@ if uploaded_file is not None:
 
         # Filtre seçenekleri
         countries = sorted(df['Ülke'].dropna().unique())
-        trade_types = sorted(df['Ticaret Türü'].dropna().unique())
+        trade_types = sorted({t.strip() for types in df['Ticaret Türü'] for t in types.split(",")})
 
         selected_countries = st.multiselect('Ülke(ler) seçin', countries, default=countries)
         selected_trade_types = st.multiselect('Ticaret tür(ler)ini seçin', trade_types, default=trade_types)
 
-        # Filtreleme
+        # Filtreleme (ticaret türü kısmı "içeren" şekilde çalışır)
         df_filtered = df[
-            df['Ülke'].isin(selected_countries) & 
-            df['Ticaret Türü'].isin(selected_trade_types)
+            df['Ülke'].isin(selected_countries) &
+            df['Ticaret Türü'].apply(lambda x: any(tt in x for tt in selected_trade_types))
         ]
 
         # Sonuçları göster
